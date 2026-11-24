@@ -8,6 +8,27 @@ A set of 12 Claude skills that cover one equity-research workflow end to end: fi
 
 Some of the skills **summarise** (turning a 60-page call transcript into a structured log). Others **analyse** (a bottom-up valuation model, a value-chain BOM, an architecture-migration delta table). In both cases the hard part is not getting one good answer. It is getting the **same structure, the same labels and the same standards of evidence every time**, so that outputs can be compared across quarters and across companies. Most of the engineering in this repo exists to make that happen.
 
+## Evaluate → tune: skills that improve against the analyst
+
+The summary and analysis skills replace work an analyst used to do by hand. So besides checking that outputs are well-formed, [`evaluation/`](evaluation/) compares **the AI running a skill on the raw material** with **the analyst's own hand-written judgment of the same company**, and uses the differences to improve the skill. The hand-written views act as labels, the skill as the model, rule edits as training:
+
+```
+skill output vs hand-written ──► sort the differences ──► propose rule edits ──► analyst approves
+             ▲                                                                       │
+             └──── kept only if held-out companies do not get worse ◄── re-run ◄─────┘
+```
+
+First results ([report](evaluation/reports/2026-11-22_skill-vs-human.md), TSEM / COHR / FORM):
+
+- **Judgment**: 17 of 20 dimension marks agree. All three disagreements are on Orders: the skill flags missing or stale order data, while the analyst trusts strong demand language.
+- **Facts**: the skill covers 80–93% of the analyst's numbers in the quarter text. One manual pass through the loop (v1 → v2) raised table and estimate coverage from about 60% to above 90%.
+- **Different blind spots**: the analyst adds value-chain structure and domain knowledge from outside the sources; the skill adds anchor numbers and caveats the analyst skipped.
+- **Limits**: not yet blind, one run per company. A held-out quarter is next.
+
+This compares the skill with the analyst (accuracy). A separate [stability report](evaluation/reports/2026-11-23_stability-tsem.md) runs the same skill several times on the same input and compares the runs with each other (consistency): on TSEM, three digests gave identical tags and marks.
+
+**Tuning.** Scripts sort the differences (input gap, format, judgment, coverage, length); the `skill-tuner` skill proposes rule edits only for patterns seen in two or more companies; the analyst approves; a gate keeps a change only if held-out companies do not get worse. Judgment rules are never changed automatically, word overlap is never a target, and the output framework of each skill stays fixed. Details: **[evaluation/TUNING.md](evaluation/TUNING.md)**.
+
 ## Examples
 
 `examples/TSEM/` (Tower Semiconductor) runs the full chain on three earnings calls (FY26 Q1–Q3), in English and Chinese: the call log in cross-quarter mode, a 10-quarter financials dashboard, the 10-sheet valuation workbook at the current price, and the investment view with each quarter added on top of the last (the append-only checks pass). Raw transcripts are not included; [`examples/README.md`](examples/README.md) lists the sources and the limits of each example.
@@ -45,27 +66,6 @@ It checks the company folder first (which quarter each file has reached, what is
 | E. Review | thesis-check or company-comparison |
 
 Optional add-ons: compare with your own hand-written note, a stability check, a cost-quality record, rule proposals. It then runs each skill in order and checks every output before the next step uses it. A request that already names one task ("summarise this call", "value it") goes straight to that skill.
-
-## Evaluate → tune: skills that improve against the analyst
-
-The summary and analysis skills replace work an analyst used to do by hand. So besides checking that outputs are well-formed, [`evaluation/`](evaluation/) compares **the AI running a skill on the raw material** with **the analyst's own hand-written judgment of the same company**, and uses the differences to improve the skill. The hand-written views act as labels, the skill as the model, rule edits as training:
-
-```
-skill output vs hand-written ──► sort the differences ──► propose rule edits ──► analyst approves
-             ▲                                                                       │
-             └──── kept only if held-out companies do not get worse ◄── re-run ◄─────┘
-```
-
-First results ([report](evaluation/reports/2026-11-22_skill-vs-human.md), TSEM / COHR / FORM):
-
-- **Judgment**: 17 of 20 dimension marks agree. All three disagreements are on Orders: the skill flags missing or stale order data, while the analyst trusts strong demand language.
-- **Facts**: the skill covers 80–93% of the analyst's numbers in the quarter text. One manual pass through the loop (v1 → v2) raised table and estimate coverage from about 60% to above 90%.
-- **Different blind spots**: the analyst adds value-chain structure and domain knowledge from outside the sources; the skill adds anchor numbers and caveats the analyst skipped.
-- **Limits**: not yet blind, one run per company. A held-out quarter is next.
-
-This compares the skill with the analyst (accuracy). A separate [stability report](evaluation/reports/2026-11-23_stability-tsem.md) runs the same skill several times on the same input and compares the runs with each other (consistency): on TSEM, three digests gave identical tags and marks.
-
-**Tuning.** Scripts sort the differences (input gap, format, judgment, coverage, length); the `skill-tuner` skill proposes rule edits only for patterns seen in two or more companies; the analyst approves; a gate keeps a change only if held-out companies do not get worse. Judgment rules are never changed automatically, word overlap is never a target, and the output framework of each skill stays fixed. Details: **[evaluation/TUNING.md](evaluation/TUNING.md)**.
 
 ## Cost-benefit: what quality costs
 
@@ -184,6 +184,27 @@ The workflow, file formats, validators and the evaluate → tune loop do not dep
 
 其中有**总结型**（把 60 页的电话会 transcript 变成结构化日志），也有**分析型**（自下而上的估值模型、产业链价值量拆分、架构迁移增减量对照表）。两类的难点都不在于某一次答得好，而在于**每一次都保持同样的结构、同样的标签、同样的证据标准**，这样不同季度、不同公司的输出才能放在一起比较。这个仓库里的大部分工程工作都是为了做到这一点。
 
+## 评估 → 调整：对照分析师不断改进的 skill
+
+总结类和分析类 skill 替代的是分析师以前手写的工作。所以除了检查输出格式是否合规，[`evaluation/`](evaluation/) 还把 **AI 用 skill 直接读原始材料的结果**，和**分析师对同一家公司的手写判断**放在一起比较，并用差异来改进 skill：手写判断相当于标签，skill 相当于模型，修改规则相当于训练。
+
+```
+skill 产出 vs 手写版 ──► 给差异分类 ──► 提出规则修改 ──► 分析师批准
+        ▲                                                   │
+        └──── 留出公司不变差才保留 ◄── 重跑 ◄─────────────────┘
+```
+
+第一批结果（[报告](evaluation/reports/2026-11-22_skill-vs-human.md)，TSEM / COHR / FORM）：
+
+- **判断**：20 个维度标记中 17 个一致。3 处分歧都在订单维：skill 对缺失或未更新的订单数据给出警示，分析师更相信强烈的需求表述。
+- **事实**：季度正文中分析师写的数字，skill 覆盖 80–93%；手动走过一轮循环（v1 → v2）后，表格和测算的覆盖率从约 60% 升到 90% 以上。
+- **盲区不同**：分析师补上材料之外的产业链结构和领域知识；skill 补上分析师略过的锚点数字和风险提示。
+- **局限**：还不是盲测，每家公司只跑了一次；下一步是留出季度测试。
+
+以上是 skill 和分析师比（准确度）。另一份[稳定性报告](evaluation/reports/2026-11-23_stability-tsem.md)让同一个 skill 在同一份输入上跑多次，几次运行之间互相比（一致性）：在 TSEM 上，三份速读的标签和标记完全相同。
+
+**调整。** 脚本先给差异分类（缺输入、格式、判断、覆盖、长度）；`skill-tuner` skill 只对两家以上公司都出现的模式提出规则修改；分析师批准；把关脚本确认留出公司没有变差才保留改动。判断规则永远不自动修改，字面重叠永远不作为目标，各 skill 的输出框架保持不变。详见 **[evaluation/TUNING.md](evaluation/TUNING.md)**。
+
 ## 示例
 
 `examples/TSEM/`（Tower Semiconductor）用三次电话会（FY26 Q1–Q3）跑完整条流程，中英文各一套：跨季度模式的电话会日志、10 季财务表、按当前股价的 10 页估值表，以及逐季叠加的投资判断（“只追加”检查都通过）。原始 transcript 不放进仓库；来源和每个示例的局限见 [`examples/README.md`](examples/README.md)。
@@ -221,27 +242,6 @@ python tools/selftest.py    # 用合成数据跑一遍所有脚本
 | E. 复核 | thesis-check 或 company-comparison |
 
 可选附加项：与你自己的手写判断对比、稳定性检查、成本质量记录、规则修改建议。之后它按顺序运行各 skill，每一步的输出检查通过后才交给下一步。已经明确是某一件事的请求（「总结这份电话会」「估值一下」）会直接交给对应的 skill。
-
-## 评估 → 调整：对照分析师不断改进的 skill
-
-总结类和分析类 skill 替代的是分析师以前手写的工作。所以除了检查输出格式是否合规，[`evaluation/`](evaluation/) 还把 **AI 用 skill 直接读原始材料的结果**，和**分析师对同一家公司的手写判断**放在一起比较，并用差异来改进 skill：手写判断相当于标签，skill 相当于模型，修改规则相当于训练。
-
-```
-skill 产出 vs 手写版 ──► 给差异分类 ──► 提出规则修改 ──► 分析师批准
-        ▲                                                   │
-        └──── 留出公司不变差才保留 ◄── 重跑 ◄─────────────────┘
-```
-
-第一批结果（[报告](evaluation/reports/2026-11-22_skill-vs-human.md)，TSEM / COHR / FORM）：
-
-- **判断**：20 个维度标记中 17 个一致。3 处分歧都在订单维：skill 对缺失或未更新的订单数据给出警示，分析师更相信强烈的需求表述。
-- **事实**：季度正文中分析师写的数字，skill 覆盖 80–93%；手动走过一轮循环（v1 → v2）后，表格和测算的覆盖率从约 60% 升到 90% 以上。
-- **盲区不同**：分析师补上材料之外的产业链结构和领域知识；skill 补上分析师略过的锚点数字和风险提示。
-- **局限**：还不是盲测，每家公司只跑了一次；下一步是留出季度测试。
-
-以上是 skill 和分析师比（准确度）。另一份[稳定性报告](evaluation/reports/2026-11-23_stability-tsem.md)让同一个 skill 在同一份输入上跑多次，几次运行之间互相比（一致性）：在 TSEM 上，三份速读的标签和标记完全相同。
-
-**调整。** 脚本先给差异分类（缺输入、格式、判断、覆盖、长度）；`skill-tuner` skill 只对两家以上公司都出现的模式提出规则修改；分析师批准；把关脚本确认留出公司没有变差才保留改动。判断规则永远不自动修改，字面重叠永远不作为目标，各 skill 的输出框架保持不变。详见 **[evaluation/TUNING.md](evaluation/TUNING.md)**。
 
 ## 成本效益：质量要花多少
 
