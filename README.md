@@ -8,6 +8,44 @@ A set of 12 Claude skills that cover one equity-research workflow end to end: fi
 
 Some of the skills **summarise** (turning a 60-page call transcript into a structured log). Others **analyse** (a bottom-up valuation model, a value-chain BOM, an architecture-migration delta table). In both cases the hard part is not getting one good answer. It is getting the **same structure, the same labels and the same standards of evidence every time**, so that outputs can be compared across quarters and across companies. Most of the engineering in this repo exists to make that happen.
 
+## Examples
+
+`examples/TSEM/` (Tower Semiconductor) runs the full chain on three earnings calls (FY26 Q1–Q3), in English and Chinese: the call log in cross-quarter mode, a 10-quarter financials dashboard, the 10-sheet valuation workbook at the current price, and the investment view with each quarter added on top of the last (the append-only checks pass). Raw transcripts are not included; [`examples/README.md`](examples/README.md) lists the sources and the limits of each example.
+
+## Using the skills
+
+- **Not sure where to start?** See [Start here](#start-here).
+- **Claude app**: import the packaged files in `dist/*.skill`.
+- **Other agents**: `SKILL.md` follows the open Agent Skills format, which other tools such as Codex CLI and Gemini CLI also read; copy the skill folder into that tool's skills directory. Scripts need a host that can run Python.
+- **Claude Code / file-based setups**: copy a skill folder from `skills/<group>/<skill>/` into your skills directory.
+- `SKILL.md` is the English version that Claude loads. `SKILL.zh-CN.md` is the same skill in Chinese, kept for Chinese readers.
+- Outputs follow the language of your request. When a skill appends to an existing file, it keeps that file's language.
+- Scripts need Python 3 and `openpyxl`. LibreOffice is used for recalculation when it is installed.
+- `{RESEARCH_ROOT}` means your research folder, with one subfolder per ticker.
+
+```bash
+python tools/build.py       # lint every skill, sync shared scripts, package dist/*.skill
+python tools/selftest.py    # run every script on synthetic fixtures
+```
+
+## Start here
+
+Not sure which skill to use, or want several of them in one go? Start with **research-workflow**. Say what you want in plain words:
+
+> "Do the full update on TSEM" · "Start coverage of COHR" · "What should I run next for FORM?" · "这些 skill 怎么用"
+
+It checks the company folder first (which quarter each file has reached, what is out of date), then offers one choice:
+
+| Workflow | Runs |
+|---|---|
+| A. First coverage | company-research → earnings-call-reader (two calls) → company-valuation → investment-view |
+| B. New quarter | earnings-call-reader → quarterly-financials-dashboard → company-valuation → investment-view |
+| C. Add an event | investment-view (investor day, trade show, broker conference, meeting notes) |
+| D. Find companies | stock-discovery → value-chain-bom or architecture-delta-table → company-comparison |
+| E. Review | thesis-check or company-comparison |
+
+Optional add-ons: compare with your own hand-written note, a stability check, a cost-quality record, rule proposals. It then runs each skill in order and checks every output before the next step uses it. A request that already names one task ("summarise this call", "value it") goes straight to that skill.
+
 ## Evaluate → tune: skills that improve against the analyst
 
 The summary and analysis skills replace work an analyst used to do by hand. So besides checking that outputs are well-formed, [`evaluation/`](evaluation/) compares **the AI running a skill on the raw material** with **the analyst's own hand-written judgment of the same company**, and uses the differences to improve the skill. The hand-written views act as labels, the skill as the model, rule edits as training:
@@ -49,24 +87,6 @@ This compares the skill with the analyst (accuracy). A separate [stability repor
 ```
 
 Each skill reads the files the previous ones wrote, from one folder per company (`{RESEARCH_ROOT}/{TICKER}/`), so nothing has to be pulled from the web twice.
-
-## Start here
-
-Not sure which skill to use, or want several of them in one go? Start with **research-workflow**. Say what you want in plain words:
-
-> "Do the full update on TSEM" · "Start coverage of COHR" · "What should I run next for FORM?" · "这些 skill 怎么用"
-
-It checks the company folder first (which quarter each file has reached, what is out of date), then offers one choice:
-
-| Workflow | Runs |
-|---|---|
-| A. First coverage | company-research → earnings-call-reader (two calls) → company-valuation → investment-view |
-| B. New quarter | earnings-call-reader → quarterly-financials-dashboard → company-valuation → investment-view |
-| C. Add an event | investment-view (investor day, trade show, broker conference, meeting notes) |
-| D. Find companies | stock-discovery → value-chain-bom or architecture-delta-table → company-comparison |
-| E. Review | thesis-check or company-comparison |
-
-Optional add-ons: compare with your own hand-written note, a stability check, a cost-quality record, rule proposals. It then runs each skill in order and checks every output before the next step uses it. A request that already names one task ("summarise this call", "value it") goes straight to that skill.
 
 ## Skills
 
@@ -113,22 +133,6 @@ What each skill does, why it was designed that way, and where its consistency co
 | Comparison with hand-written references | investment-view ([evaluation/](evaluation/): `compare_view.py`, `run_eval.py`, `diagnose.py`, `gate.py`) | the output's judgment and coverage drifting away from the analyst's own views |
 | Self-test | `tools/selftest.py` | regressions in any of the above (50 cases, including expected failures) |
 
-## Using the skills
-
-- **Not sure where to start?** See [Start here](#start-here).
-- **Claude app**: import the packaged files in `dist/*.skill`.
-- **Other agents**: `SKILL.md` follows the open Agent Skills format, which other tools such as Codex CLI and Gemini CLI also read; copy the skill folder into that tool's skills directory. Scripts need a host that can run Python.
-- **Claude Code / file-based setups**: copy a skill folder from `skills/<group>/<skill>/` into your skills directory.
-- `SKILL.md` is the English version that Claude loads. `SKILL.zh-CN.md` is the same skill in Chinese, kept for Chinese readers.
-- Outputs follow the language of your request. When a skill appends to an existing file, it keeps that file's language.
-- Scripts need Python 3 and `openpyxl`. LibreOffice is used for recalculation when it is installed.
-- `{RESEARCH_ROOT}` means your research folder, with one subfolder per ticker.
-
-```bash
-python tools/build.py       # lint every skill, sync shared scripts, package dist/*.skill
-python tools/selftest.py    # run every script on synthetic fixtures
-```
-
 ## Repository layout
 
 ```
@@ -144,10 +148,6 @@ CHANGELOG.md                             version record
 examples/                                sample outputs (see below)
 dist/                                    packaged .skill files
 ```
-
-## Examples
-
-`examples/TSEM/` (Tower Semiconductor) runs the full chain on three earnings calls (FY26 Q1–Q3), in English and Chinese: the call log in cross-quarter mode, a 10-quarter financials dashboard, the 10-sheet valuation workbook at the current price, and the investment view with each quarter added on top of the last (the append-only checks pass). Raw transcripts are not included; [`examples/README.md`](examples/README.md) lists the sources and the limits of each example.
 
 ## Extending to other industries
 
@@ -183,6 +183,44 @@ The workflow, file formats, validators and the evaluate → tune loop do not dep
 一套 12 个 Claude skill（另有 2 个元 skill：一个是入口，负责推荐并串联合适的 skill；一个根据与分析师手写结果的对比改进其他 skill；共 14 个），覆盖一条完整的股票研究流程：找出产业链里的公司、首次覆盖、逐季读电话会、估值、为每家公司维护一份持续更新的判断、校对投资逻辑。这些 skill 主要在光通信、AI 基础设施和半导体供应链公司上打磨，适用于美股、A 股和港股。
 
 其中有**总结型**（把 60 页的电话会 transcript 变成结构化日志），也有**分析型**（自下而上的估值模型、产业链价值量拆分、架构迁移增减量对照表）。两类的难点都不在于某一次答得好，而在于**每一次都保持同样的结构、同样的标签、同样的证据标准**，这样不同季度、不同公司的输出才能放在一起比较。这个仓库里的大部分工程工作都是为了做到这一点。
+
+## 示例
+
+`examples/TSEM/`（Tower Semiconductor）用三次电话会（FY26 Q1–Q3）跑完整条流程，中英文各一套：跨季度模式的电话会日志、10 季财务表、按当前股价的 10 页估值表，以及逐季叠加的投资判断（“只追加”检查都通过）。原始 transcript 不放进仓库；来源和每个示例的局限见 [`examples/README.md`](examples/README.md)。
+
+## 使用方法
+
+- **不知道从哪开始？** 见[从这里开始](#从这里开始)。
+- **Claude 应用**：导入 `dist/*.skill` 里打包好的文件。
+- **其他 agent**：`SKILL.md` 采用开放的 Agent Skills 格式，Codex CLI、Gemini CLI 等其他工具也能读取；把 skill 文件夹复制到对应工具的 skills 目录即可。脚本需要宿主能运行 Python。
+- **Claude Code / 文件式环境**：把 `skills/<分组>/<skill>/` 整个文件夹复制到你的 skills 目录。
+- `SKILL.md` 是 Claude 实际加载的英文版；`SKILL.zh-CN.md` 是同一个 skill 的中文版，供中文读者阅读。
+- 输出语言跟随提问语言；追加到已有文件时沿用该文件的语言。
+- 脚本需要 Python 3 和 `openpyxl`；装了 LibreOffice 时会用它重算公式。
+- `{RESEARCH_ROOT}` 指你的研究根目录，每个 ticker 一个子文件夹。
+
+```bash
+python tools/build.py       # 检查所有 skill、同步共享脚本、打包 dist/*.skill
+python tools/selftest.py    # 用合成数据跑一遍所有脚本
+```
+
+## 从这里开始
+
+不知道该用哪个 skill，或者想一次把几个串起来用？从 **research-workflow** 开始，直接说你想做什么：
+
+> 「把 TSEM 这季全部更新」·「开始覆盖 COHR」·「FORM 下一步该跑什么」·「这些 skill 怎么用」
+
+它会先检查公司文件夹（每个文件到了哪一季、哪些已经过期），然后给出一个选择：
+
+| 流程 | 运行 |
+|---|---|
+| A. 首次覆盖 | company-research → earnings-call-reader（两次电话会）→ company-valuation → investment-view |
+| B. 新季度 | earnings-call-reader → quarterly-financials-dashboard → company-valuation → investment-view |
+| C. 加一个会议 | investment-view（投资者日、展会、券商会议、会议纪要） |
+| D. 找标的 | stock-discovery → value-chain-bom 或 architecture-delta-table → company-comparison |
+| E. 复核 | thesis-check 或 company-comparison |
+
+可选附加项：与你自己的手写判断对比、稳定性检查、成本质量记录、规则修改建议。之后它按顺序运行各 skill，每一步的输出检查通过后才交给下一步。已经明确是某一件事的请求（「总结这份电话会」「估值一下」）会直接交给对应的 skill。
 
 ## 评估 → 调整：对照分析师不断改进的 skill
 
@@ -224,24 +262,6 @@ skill 产出 vs 手写版 ──► 给差异分类 ──► 提出规则修改
 ```
 
 每个 skill 读取前面 skill 写在同一个公司文件夹（`{RESEARCH_ROOT}/{TICKER}/`）里的文件，同样的数据不必从网上拉两次。
-
-## 从这里开始
-
-不知道该用哪个 skill，或者想一次把几个串起来用？从 **research-workflow** 开始，直接说你想做什么：
-
-> 「把 TSEM 这季全部更新」·「开始覆盖 COHR」·「FORM 下一步该跑什么」·「这些 skill 怎么用」
-
-它会先检查公司文件夹（每个文件到了哪一季、哪些已经过期），然后给出一个选择：
-
-| 流程 | 运行 |
-|---|---|
-| A. 首次覆盖 | company-research → earnings-call-reader（两次电话会）→ company-valuation → investment-view |
-| B. 新季度 | earnings-call-reader → quarterly-financials-dashboard → company-valuation → investment-view |
-| C. 加一个会议 | investment-view（投资者日、展会、券商会议、会议纪要） |
-| D. 找标的 | stock-discovery → value-chain-bom 或 architecture-delta-table → company-comparison |
-| E. 复核 | thesis-check 或 company-comparison |
-
-可选附加项：与你自己的手写判断对比、稳定性检查、成本质量记录、规则修改建议。之后它按顺序运行各 skill，每一步的输出检查通过后才交给下一步。已经明确是某一件事的请求（「总结这份电话会」「估值一下」）会直接交给对应的 skill。
 
 ## Skill 一览
 
@@ -288,22 +308,6 @@ skill 产出 vs 手写版 ──► 给差异分类 ──► 提出规则修改
 | 与手写参照对比 | investment-view（[evaluation/](evaluation/)：`compare_view.py`、`run_eval.py`、`diagnose.py`、`gate.py`） | 输出的判断和覆盖面逐渐偏离分析师本人的看法 |
 | 自测 | `tools/selftest.py` | 以上任何一项的回归（50 个用例，含预期失败的用例） |
 
-## 使用方法
-
-- **不知道从哪开始？** 见[从这里开始](#从这里开始)。
-- **Claude 应用**：导入 `dist/*.skill` 里打包好的文件。
-- **其他 agent**：`SKILL.md` 采用开放的 Agent Skills 格式，Codex CLI、Gemini CLI 等其他工具也能读取；把 skill 文件夹复制到对应工具的 skills 目录即可。脚本需要宿主能运行 Python。
-- **Claude Code / 文件式环境**：把 `skills/<分组>/<skill>/` 整个文件夹复制到你的 skills 目录。
-- `SKILL.md` 是 Claude 实际加载的英文版；`SKILL.zh-CN.md` 是同一个 skill 的中文版，供中文读者阅读。
-- 输出语言跟随提问语言；追加到已有文件时沿用该文件的语言。
-- 脚本需要 Python 3 和 `openpyxl`；装了 LibreOffice 时会用它重算公式。
-- `{RESEARCH_ROOT}` 指你的研究根目录，每个 ticker 一个子文件夹。
-
-```bash
-python tools/build.py       # 检查所有 skill、同步共享脚本、打包 dist/*.skill
-python tools/selftest.py    # 用合成数据跑一遍所有脚本
-```
-
 ## 仓库结构
 
 ```
@@ -319,10 +323,6 @@ CHANGELOG.md                            版本记录
 examples/                               输出示例（见下）
 dist/                                   打包好的 .skill 文件
 ```
-
-## 示例
-
-`examples/TSEM/`（Tower Semiconductor）用三次电话会（FY26 Q1–Q3）跑完整条流程，中英文各一套：跨季度模式的电话会日志、10 季财务表、按当前股价的 10 页估值表，以及逐季叠加的投资判断（“只追加”检查都通过）。原始 transcript 不放进仓库；来源和每个示例的局限见 [`examples/README.md`](examples/README.md)。
 
 ## 扩展到其他行业
 
