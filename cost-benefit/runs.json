@@ -1,0 +1,240 @@
+{
+ "description": "Cost-vs-quality runs. Tokens / tool calls / time are the sub-agent usage reports (each run a fresh Claude Code sub-agent). price_ratio = per-token price relative to the baseline (Anthropic pricing page, 2026-11-23; Haiku at the up-to-100K-prompt rate). quality.numbers = share of the Opus runs' numbers that the run also cites (Opus runs are scored against the other Opus runs).",
+ "experiments": [
+  {
+   "id": "model-tier-reader",
+   "date": "2026-11-23",
+   "skill": "earnings-call-reader",
+   "input": "TSEM FY26 Q2 transcript (local), new single-quarter log, Chinese",
+   "question": "Can earnings-call-reader run on Sonnet or Haiku instead of Opus?",
+   "baseline": "opus",
+   "price_ratio": {
+    "opus": 1.0,
+    "sonnet": 0.5,
+    "haiku": 0.025
+   },
+   "note": "opus-s1..s3 are the three Opus runs of the 2026-11-23 stability test on the same input; they carry quality only (no usage was recorded then).",
+   "runs": [
+    {
+     "config": "haiku",
+     "run": "haiku-1",
+     "tokens": 124450,
+     "tool_uses": 14,
+     "duration_s": 149.235,
+     "quality": {
+      "valid": 1.0,
+      "traceable": 0.972972972972973,
+      "numbers": 0.724606713901553,
+      "chars": 21517,
+      "quotes": 1.0
+     },
+     "fix_rounds": 0
+    },
+    {
+     "config": "haiku",
+     "run": "haiku-2",
+     "tokens": 113275,
+     "tool_uses": 11,
+     "duration_s": 106.228,
+     "quality": {
+      "valid": 1.0,
+      "traceable": 0.9178082191780822,
+      "numbers": 0.7148923721483762,
+      "chars": 18625,
+      "quotes": 0.9545454545454546
+     },
+     "fix_rounds": 0
+    },
+    {
+     "config": "opus",
+     "run": "opus-1",
+     "tokens": 115080,
+     "tool_uses": 8,
+     "duration_s": 240.449,
+     "quality": {
+      "valid": 1.0,
+      "traceable": 0.9191919191919192,
+      "numbers": 0.9283289128971296,
+      "chars": 31653,
+      "quotes": 0.9787234042553191
+     },
+     "fix_rounds": 0
+    },
+    {
+     "config": "sonnet",
+     "run": "sonnet-1",
+     "tokens": 99411,
+     "tool_uses": 6,
+     "duration_s": 98.905,
+     "quality": {
+      "valid": 1.0,
+      "traceable": 0.9666666666666667,
+      "numbers": 0.8790475379386978,
+      "chars": 18671,
+      "quotes": 1.0
+     },
+     "fix_rounds": 0
+    },
+    {
+     "config": "sonnet",
+     "run": "sonnet-2",
+     "tokens": 97470,
+     "tool_uses": 6,
+     "duration_s": 95.479,
+     "quality": {
+      "valid": 1.0,
+      "traceable": 0.9230769230769231,
+      "numbers": 0.7694791185082448,
+      "chars": 17960,
+      "quotes": 1.0
+     },
+     "fix_rounds": 0
+    },
+    {
+     "config": "opus",
+     "run": "opus-s1",
+     "tokens": null,
+     "tool_uses": null,
+     "duration_s": null,
+     "quality": {
+      "valid": 1.0,
+      "traceable": 0.8666666666666667,
+      "numbers": 0.9698057048082598,
+      "chars": 34417,
+      "quotes": 1.0
+     }
+    },
+    {
+     "config": "opus",
+     "run": "opus-s2",
+     "tokens": null,
+     "tool_uses": null,
+     "duration_s": null,
+     "quality": {
+      "valid": 1.0,
+      "traceable": 0.8737864077669902,
+      "numbers": 0.960132654869497,
+      "chars": 35937,
+      "quotes": 1.0
+     }
+    },
+    {
+     "config": "opus",
+     "run": "opus-s3",
+     "tokens": null,
+     "tool_uses": null,
+     "duration_s": null,
+     "quality": {
+      "valid": 1.0,
+      "traceable": 0.9263157894736842,
+      "numbers": 0.8993700294671169,
+      "chars": 35516,
+      "quotes": 1.0
+     }
+    }
+   ]
+  },
+  {
+   "id": "model-tier-digest",
+   "date": "2026-11-23",
+   "skill": "earnings-digest",
+   "input": "one Opus call log of TSEM FY26 Q2 (stability run 1), Chinese digest",
+   "question": "Can earnings-digest run on Sonnet or Haiku instead of Opus?",
+   "baseline": "opus",
+   "price_ratio": {
+    "opus": 1.0,
+    "sonnet": 0.5,
+    "haiku": 0.025
+   },
+   "note": "marks are scored against the Opus run's marks (✅⚠⚠✅✅); with one Opus run the baseline has no run-to-run spread, so verdicts are PROVISIONAL.",
+   "runs": [
+    {
+     "config": "haiku",
+     "run": "haiku-1",
+     "tokens": 102178,
+     "tool_uses": 11,
+     "duration_s": 79.449,
+     "quality": {
+      "valid": 1.0,
+      "traceable": 1.0,
+      "numbers": 0.49019607843137253,
+      "chars": 2273,
+      "quotes": 0.0,
+      "marks": 1.0
+     },
+     "marks_seen": "✅⚠⚠✅✅",
+     "tag": "符合预期",
+     "fix_rounds": 2
+    },
+    {
+     "config": "haiku",
+     "run": "haiku-2",
+     "tokens": 109712,
+     "tool_uses": 6,
+     "duration_s": 90.971,
+     "quality": {
+      "valid": 1.0,
+      "traceable": 1.0,
+      "numbers": 0.5294117647058824,
+      "chars": 2710,
+      "marks": 1.0
+     },
+     "marks_seen": "✅⚠⚠✅✅",
+     "tag": "符合预期",
+     "fix_rounds": 0
+    },
+    {
+     "config": "opus",
+     "run": "opus-1",
+     "tokens": 104975,
+     "tool_uses": 8,
+     "duration_s": 131.0,
+     "quality": {
+      "valid": 1.0,
+      "traceable": 1.0,
+      "numbers": null,
+      "chars": 4964,
+      "marks": 1.0
+     },
+     "marks_seen": "✅⚠⚠✅✅",
+     "tag": "符合预期",
+     "fix_rounds": 0
+    },
+    {
+     "config": "sonnet",
+     "run": "sonnet-1",
+     "tokens": 98322,
+     "tool_uses": 8,
+     "duration_s": 62.053,
+     "quality": {
+      "valid": 1.0,
+      "traceable": 1.0,
+      "numbers": 0.7254901960784313,
+      "chars": 4120,
+      "marks": 0.8
+     },
+     "marks_seen": "✅⚠⚠⚠✅",
+     "tag": "符合预期",
+     "fix_rounds": 3
+    },
+    {
+     "config": "sonnet",
+     "run": "sonnet-2",
+     "tokens": 95943,
+     "tool_uses": 7,
+     "duration_s": 50.875,
+     "quality": {
+      "valid": 1.0,
+      "traceable": 1.0,
+      "numbers": 0.8235294117647058,
+      "chars": 3570,
+      "marks": 1.0
+     },
+     "marks_seen": "✅⚠⚠✅✅",
+     "tag": "超预期",
+     "fix_rounds": 2
+    }
+   ]
+  }
+ ]
+}

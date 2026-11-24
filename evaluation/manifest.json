@@ -1,0 +1,93 @@
+{
+ "description": "Skill output vs hand-written reference. One experiment = one question at one time, possibly several companies; each experiment has its own report reports/{id}.md. Paths are relative to the private workspace (--root). Closed experiments are point-in-time records and are not re-run. Run ids are unique across the whole manifest. split: 'train' runs may be used as evidence for rule changes; 'heldout' runs only judge them (gate.py).",
+ "experiments": [
+  {
+   "id": "2026-11-22_skill-vs-human",
+   "date": "2026-11-22",
+   "status": "open",
+   "title": "Skill vs human: company-view on TSEM, COHR and FORM (2026-11-22)",
+   "question": "Where do the skill's company views agree with the analyst's hand-written views, and what does each side see that the other misses?",
+   "question_zh": "skill 生成的公司判断与分析师手写判断哪里一致，双方各自看到了什么对方没看到的？",
+   "runs": [
+    {
+     "id": "TSEM-v1",
+     "ticker": "TSEM",
+     "skill_version": "company-view v1",
+     "generated": "runs/investment-view/v1/TSEM_财报前瞻判断.md",
+     "reference": "references/TSEM/TSEM_财报前瞻判断.md",
+     "inputs": {
+      "call_log": true,
+      "valuation_workbook": true,
+      "event_files": false
+     },
+     "notes": "First draft of the rules. In-sample: the reference was read while writing the rules.",
+     "split": "train"
+    },
+    {
+     "id": "TSEM-v2",
+     "ticker": "TSEM",
+     "skill_version": "company-view v2",
+     "generated": "runs/investment-view/v2/TSEM_财报前瞻判断.md",
+     "reference": "references/TSEM/TSEM_财报前瞻判断.md",
+     "inputs": {
+      "call_log": true,
+      "valuation_workbook": true,
+      "event_files": false
+     },
+     "notes": "After the five v1 -> v2 rule changes. In-sample (training set).",
+     "split": "train"
+    },
+    {
+     "id": "COHR-v2",
+     "ticker": "COHR",
+     "skill_version": "company-view v2",
+     "generated": "runs/investment-view/v2/COHR_财报前瞻判断.md",
+     "reference": "references/COHR/COHR_财报前瞻判断.md",
+     "inputs": {
+      "call_log": true,
+      "valuation_workbook": true,
+      "event_files": true
+     },
+     "aliases": {
+      "SA": "scale-across"
+     },
+     "notes": "Same inputs as the analyst except an older (2026-08-23) estimate. Not blind: the reference had been read.",
+     "split": "train"
+    },
+    {
+     "id": "FORM-v2",
+     "ticker": "FORM",
+     "skill_version": "company-view v2",
+     "generated": "runs/investment-view/v2/FORM_财报前瞻判断.md",
+     "reference": "references/FORM/FORM_财报前瞻判断.md",
+     "inputs": {
+      "call_log": true,
+      "valuation_workbook": true,
+      "initial_coverage": true,
+      "event_files": false
+     },
+     "notes": "Same inputs as the analyst (call log, initial coverage note, valuation workbook). Not blind: the reference had been read.",
+     "split": "train"
+    },
+    {
+     "id": "FORM-v2-transcripts",
+     "ticker": "FORM",
+     "skill_version": "company-view v2",
+     "generated": "runs/investment-view/v2/FORM_财报前瞻判断.transcripts-only.md",
+     "reference": "references/FORM/FORM_财报前瞻判断.md",
+     "inputs": {
+      "call_log": false,
+      "valuation_workbook": false,
+      "event_files": false,
+      "transcripts": [
+       "FY26 Q1",
+       "FY26 Q2"
+      ]
+     },
+     "notes": "Input ablation: two transcripts only (no call log, slides or workbook), so the estimates block is absent by rule. Not blind.",
+     "split": "train"
+    }
+   ]
+  }
+ ]
+}

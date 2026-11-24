@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+*.backup.md
+*.clean.txt
+# raw transcripts are copyrighted by their providers - keep them local
+examples/**/*.txt
+examples/**/*.pdf
