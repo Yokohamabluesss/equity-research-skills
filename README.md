@@ -1,12 +1,14 @@
 # Equity Research Skills for Claude
 
-[English](#english) | [中文](#中文) | [TSEM examples · 查看示例](examples/README.md)
+[English](#english) | [中文](#中文)
 
 <a id="english"></a>
 
 A set of 12 Claude skills that cover one equity-research workflow end to end: finding the companies in a value chain, first-time coverage, reading earnings calls quarter after quarter, valuation, keeping one living judgment per company, and checking an investment thesis. Two meta skills sit on top: an entry point that suggests and chains the right skills, and one that improves the others from their comparison with the analyst's own work (14 skills in total). They were developed on optical communications, AI infrastructure and semiconductor supply-chain companies, and work for US, A-share and Hong Kong listings.
 
 Some of the skills **summarise** (turning a 60-page call transcript into a structured log). Others **analyse** (a bottom-up valuation model, a value-chain BOM, an architecture-migration delta table). In both cases the hard part is not getting one good answer. It is getting the **same structure, the same labels and the same standards of evidence every time**, so that outputs can be compared across quarters and across companies. Most of the engineering in this repo exists to make that happen.
+
+[See the TSEM examples](examples/README.md) · [Read the evaluation report](evaluation/reports/2026-11-22_skill-vs-human.md) · [Start here](#start-here)
 
 ## Evaluate → tune: skills that improve against the analyst
 
@@ -29,25 +31,16 @@ This compares the skill with the analyst (accuracy). A separate [stability repor
 
 **Tuning.** Scripts sort the differences (input gap, format, judgment, coverage, length); the `skill-tuner` skill proposes rule edits only for patterns seen in two or more companies; the analyst approves; a gate keeps a change only if held-out companies do not get worse. Judgment rules are never changed automatically, word overlap is never a target, and the output framework of each skill stays fixed. Details: **[evaluation/TUNING.md](evaluation/TUNING.md)**.
 
+## Cost-benefit: what quality costs
+
+`evaluation/` measures how good the output is; **[cost-benefit/](cost-benefit/)** measures what it costs to get it, and decides whether a cheaper way of running a skill is good enough. A cheaper way can be a smaller model, fewer inputs, fewer repeated runs, or preprocessing. Each run records tokens, tool calls and time; quality reuses the same metrics, and a cheaper setup is accepted only under the same "not worse" rule as `gate.py`. First round ([report](cost-benefit/reports/2026-11-23_cost-vs-quality.md)):
+- **Model tier.** Sonnet and Haiku cost ~0.45x and ~0.025x of Opus per run and stay accurate (quotes verbatim, numbers traceable), but their outputs are about half as long and keep fewer facts. The call-log reader stays on Opus; Haiku is a candidate for the digest.
+- **Inputs.** Cleaning and the bilingual split are free (3%–4% and ~54% fewer tokens). The full FORM input set costs 2.2x the transcripts alone and is worth it.
+- **Repeated runs.** Two stability runs give the same verdict as three.
+
 ## Examples
 
 `examples/TSEM/` (Tower Semiconductor) runs the full chain on three earnings calls (FY26 Q1–Q3), in English and Chinese: the call log in cross-quarter mode, a 10-quarter financials dashboard, the 10-sheet valuation workbook at the current price, and the investment view with each quarter added on top of the last (the append-only checks pass). Raw transcripts are not included; [`examples/README.md`](examples/README.md) lists the sources and the limits of each example.
-
-## Using the skills
-
-- **Not sure where to start?** See [Start here](#start-here).
-- **Claude app**: import the packaged files in `dist/*.skill`.
-- **Other agents**: `SKILL.md` follows the open Agent Skills format, which other tools such as Codex CLI and Gemini CLI also read; copy the skill folder into that tool's skills directory. Scripts need a host that can run Python.
-- **Claude Code / file-based setups**: copy a skill folder from `skills/<group>/<skill>/` into your skills directory.
-- `SKILL.md` is the English version that Claude loads. `SKILL.zh-CN.md` is the same skill in Chinese, kept for Chinese readers.
-- Outputs follow the language of your request. When a skill appends to an existing file, it keeps that file's language.
-- Scripts need Python 3 and `openpyxl`. LibreOffice is used for recalculation when it is installed.
-- `{RESEARCH_ROOT}` means your research folder, with one subfolder per ticker.
-
-```bash
-python tools/build.py       # lint every skill, sync shared scripts, package dist/*.skill
-python tools/selftest.py    # run every script on synthetic fixtures
-```
 
 ## Start here
 
@@ -67,12 +60,21 @@ It checks the company folder first (which quarter each file has reached, what is
 
 Optional add-ons: compare with your own hand-written note, a stability check, a cost-quality record, rule proposals. It then runs each skill in order and checks every output before the next step uses it. A request that already names one task ("summarise this call", "value it") goes straight to that skill.
 
-## Cost-benefit: what quality costs
+## Using the skills
 
-`evaluation/` measures how good the output is; **[cost-benefit/](cost-benefit/)** measures what it costs to get it, and decides whether a cheaper way of running a skill is good enough. A cheaper way can be a smaller model, fewer inputs, fewer repeated runs, or preprocessing. Each run records tokens, tool calls and time; quality reuses the same metrics, and a cheaper setup is accepted only under the same "not worse" rule as `gate.py`. First round ([report](cost-benefit/reports/2026-11-23_cost-vs-quality.md)):
-- **Model tier.** Sonnet and Haiku cost ~0.45x and ~0.025x of Opus per run and stay accurate (quotes verbatim, numbers traceable), but their outputs are about half as long and keep fewer facts. The call-log reader stays on Opus; Haiku is a candidate for the digest.
-- **Inputs.** Cleaning and the bilingual split are free (3%–4% and ~54% fewer tokens). The full FORM input set costs 2.2x the transcripts alone and is worth it.
-- **Repeated runs.** Two stability runs give the same verdict as three.
+- **Not sure where to start?** See [Start here](#start-here).
+- **Claude app**: import the packaged files in `dist/*.skill`.
+- **Other agents**: `SKILL.md` follows the open Agent Skills format, which other tools such as Codex CLI and Gemini CLI also read; copy the skill folder into that tool's skills directory. Scripts need a host that can run Python.
+- **Claude Code / file-based setups**: copy a skill folder from `skills/<group>/<skill>/` into your skills directory.
+- `SKILL.md` is the English version that Claude loads. `SKILL.zh-CN.md` is the same skill in Chinese, kept for Chinese readers.
+- Outputs follow the language of your request. When a skill appends to an existing file, it keeps that file's language.
+- Scripts need Python 3 and `openpyxl`. LibreOffice is used for recalculation when it is installed.
+- `{RESEARCH_ROOT}` means your research folder, with one subfolder per ticker.
+
+```bash
+python tools/build.py       # lint every skill, sync shared scripts, package dist/*.skill
+python tools/selftest.py    # run every script on synthetic fixtures
+```
 
 ## Workflow
 
@@ -133,6 +135,22 @@ What each skill does, why it was designed that way, and where its consistency co
 | Comparison with hand-written references | investment-view ([evaluation/](evaluation/): `compare_view.py`, `run_eval.py`, `diagnose.py`, `gate.py`) | the output's judgment and coverage drifting away from the analyst's own views |
 | Self-test | `tools/selftest.py` | regressions in any of the above (50 cases, including expected failures) |
 
+## Limitations
+
+- The checkers verify structure, not truth. They catch a skipped section or an edited old quarter; they cannot tell whether a judgment is right.
+- Quality depends on the sources. Yahoo Finance usually offers only the most recent transcript for free; older ones need a subscription or a file you provide.
+- The skills were tuned on optical, semiconductor and AI-infrastructure companies. Other sectors work, but the built-in checklists (e.g. the optical segment list) are less complete there.
+- The skills were developed iteratively with Claude. The scripts were written with AI assistance, then reviewed and tested with `tools/selftest.py`.
+- Nothing here is investment advice.
+
+## Extending to other industries
+
+The workflow, file formats, validators and the evaluate → tune loop do not depend on the industry. What does:
+
+- **product breakdowns**: company-research and earnings-call-reader split "optical" into EML / CW / VCSEL / SiPh / modules; another industry needs its own split;
+- **segment lists and starter checklists** in stock-discovery, value-chain-bom and architecture-delta-table (liquid cooling, solid-state batteries, advanced packaging and storage already have starter lists);
+- **reference cases**: two or three companies run end to end, plus one hand-written view, so the loop has something to tune against.
+
 ## Repository layout
 
 ```
@@ -149,14 +167,6 @@ examples/                                sample outputs (see below)
 dist/                                    packaged .skill files
 ```
 
-## Extending to other industries
-
-The workflow, file formats, validators and the evaluate → tune loop do not depend on the industry. What does:
-
-- **product breakdowns**: company-research and earnings-call-reader split "optical" into EML / CW / VCSEL / SiPh / modules; another industry needs its own split;
-- **segment lists and starter checklists** in stock-discovery, value-chain-bom and architecture-delta-table (liquid cooling, solid-state batteries, advanced packaging and storage already have starter lists);
-- **reference cases**: two or three companies run end to end, plus one hand-written view, so the loop has something to tune against.
-
 ## Roadmap
 
 1. **Measured stability.** Run the current skills several times on the same input, in separate sessions, and measure what scripts can compute: validator pass rate, quote fidelity (the share of quotes found verbatim in the transcript), number traceability, and run-to-run consistency of product splits and digest verdicts ([`evaluation/stability.py`](evaluation/README.md#stability-metrics-stabilitypy)). [First results on TSEM](evaluation/reports/2026-11-23_stability-tsem.md): six runs, all valid; the three digests gave identical tags and marks. COHR and FORM are next. A before/after comparison with the skills as they were before this repository can be added with the same script.
@@ -165,14 +175,6 @@ The workflow, file formats, validators and the evaluate → tune loop do not dep
 4. **More industries.** Extend the built-in checklists and examples beyond optical communications and semiconductors, starting from the lists that already exist for liquid cooling, solid-state batteries, advanced packaging and storage.
 5. **Fundamental backtesting.** Turn research signals into rules fixed in advance (for example guidance raises, order-proxy inflections, or the dimension verdicts recorded in each investment view), then test on point-in-time historical data against a benchmark, with an out-of-sample period, to see whether they lead subsequent fundamentals or returns.
 6. **A runner, in a separate repository.** A program that uses this repository as its library of skills, evaluation and cost-benefit scripts, and adds what a chat session cannot: batch and scheduled runs, several models side by side, the fundamental backtests above, and price-chart analysis. This repository stays the content; the runner only orchestrates.
-
-## Limitations
-
-- The checkers verify structure, not truth. They catch a skipped section or an edited old quarter; they cannot tell whether a judgment is right.
-- Quality depends on the sources. Yahoo Finance usually offers only the most recent transcript for free; older ones need a subscription or a file you provide.
-- The skills were tuned on optical, semiconductor and AI-infrastructure companies. Other sectors work, but the built-in checklists (e.g. the optical segment list) are less complete there.
-- The skills were developed iteratively with Claude. The scripts were written with AI assistance, then reviewed and tested with `tools/selftest.py`.
-- Nothing here is investment advice.
 
 ---
 
@@ -183,6 +185,8 @@ The workflow, file formats, validators and the evaluate → tune loop do not dep
 一套 12 个 Claude skill（另有 2 个元 skill：一个是入口，负责推荐并串联合适的 skill；一个根据与分析师手写结果的对比改进其他 skill；共 14 个），覆盖一条完整的股票研究流程：找出产业链里的公司、首次覆盖、逐季读电话会、估值、为每家公司维护一份持续更新的判断、校对投资逻辑。这些 skill 主要在光通信、AI 基础设施和半导体供应链公司上打磨，适用于美股、A 股和港股。
 
 其中有**总结型**（把 60 页的电话会 transcript 变成结构化日志），也有**分析型**（自下而上的估值模型、产业链价值量拆分、架构迁移增减量对照表）。两类的难点都不在于某一次答得好，而在于**每一次都保持同样的结构、同样的标签、同样的证据标准**，这样不同季度、不同公司的输出才能放在一起比较。这个仓库里的大部分工程工作都是为了做到这一点。
+
+[查看 TSEM 成品](examples/README.md#示例) · [阅读评估报告](evaluation/reports/2026-11-22_skill-vs-human.md#中文) · [从这里开始](#从这里开始)
 
 ## 评估 → 调整：对照分析师不断改进的 skill
 
@@ -205,25 +209,16 @@ skill 产出 vs 手写版 ──► 给差异分类 ──► 提出规则修改
 
 **调整。** 脚本先给差异分类（缺输入、格式、判断、覆盖、长度）；`skill-tuner` skill 只对两家以上公司都出现的模式提出规则修改；分析师批准；把关脚本确认留出公司没有变差才保留改动。判断规则永远不自动修改，字面重叠永远不作为目标，各 skill 的输出框架保持不变。详见 **[evaluation/TUNING.md](evaluation/TUNING.md)**。
 
+## 成本效益：质量要花多少
+
+`evaluation/` 衡量输出好不好；**[cost-benefit/](cost-benefit/)** 衡量为此花了多少，并判断更便宜的跑法够不够好。更便宜的跑法包括：更小的模型、更少的输入、更少的重复次数、预处理。每次运行记录 token、工具调用和用时；质量沿用同一套指标，更便宜的跑法只有满足与 `gate.py` 相同的"没变差"规则才采纳。第一轮（[报告](cost-benefit/reports/2026-11-23_cost-vs-quality.md)）：
+- **模型档位。** Sonnet 和 Haiku 每次运行的成本约为 Opus 的 0.45 倍和 0.025 倍，输出依然准确（引用逐字、数字可溯源），但篇幅约一半，保留的事实更少。电话会日志继续用 Opus；速读可以考虑 Haiku。
+- **输入。** 清理和双语拆分没有质量代价（分别少 3%–4% 和约 54% 的 token）。FORM 的完整输入是只给 transcript 的 2.2 倍成本，值得。
+- **重复次数。** 稳定性测试跑 2 次和 3 次结论相同。
+
 ## 示例
 
 `examples/TSEM/`（Tower Semiconductor）用三次电话会（FY26 Q1–Q3）跑完整条流程，中英文各一套：跨季度模式的电话会日志、10 季财务表、按当前股价的 10 页估值表，以及逐季叠加的投资判断（“只追加”检查都通过）。原始 transcript 不放进仓库；来源和每个示例的局限见 [`examples/README.md`](examples/README.md)。
-
-## 使用方法
-
-- **不知道从哪开始？** 见[从这里开始](#从这里开始)。
-- **Claude 应用**：导入 `dist/*.skill` 里打包好的文件。
-- **其他 agent**：`SKILL.md` 采用开放的 Agent Skills 格式，Codex CLI、Gemini CLI 等其他工具也能读取；把 skill 文件夹复制到对应工具的 skills 目录即可。脚本需要宿主能运行 Python。
-- **Claude Code / 文件式环境**：把 `skills/<分组>/<skill>/` 整个文件夹复制到你的 skills 目录。
-- `SKILL.md` 是 Claude 实际加载的英文版；`SKILL.zh-CN.md` 是同一个 skill 的中文版，供中文读者阅读。
-- 输出语言跟随提问语言；追加到已有文件时沿用该文件的语言。
-- 脚本需要 Python 3 和 `openpyxl`；装了 LibreOffice 时会用它重算公式。
-- `{RESEARCH_ROOT}` 指你的研究根目录，每个 ticker 一个子文件夹。
-
-```bash
-python tools/build.py       # 检查所有 skill、同步共享脚本、打包 dist/*.skill
-python tools/selftest.py    # 用合成数据跑一遍所有脚本
-```
 
 ## 从这里开始
 
@@ -243,12 +238,21 @@ python tools/selftest.py    # 用合成数据跑一遍所有脚本
 
 可选附加项：与你自己的手写判断对比、稳定性检查、成本质量记录、规则修改建议。之后它按顺序运行各 skill，每一步的输出检查通过后才交给下一步。已经明确是某一件事的请求（「总结这份电话会」「估值一下」）会直接交给对应的 skill。
 
-## 成本效益：质量要花多少
+## 使用方法
 
-`evaluation/` 衡量输出好不好；**[cost-benefit/](cost-benefit/)** 衡量为此花了多少，并判断更便宜的跑法够不够好。更便宜的跑法包括：更小的模型、更少的输入、更少的重复次数、预处理。每次运行记录 token、工具调用和用时；质量沿用同一套指标，更便宜的跑法只有满足与 `gate.py` 相同的"没变差"规则才采纳。第一轮（[报告](cost-benefit/reports/2026-11-23_cost-vs-quality.md)）：
-- **模型档位。** Sonnet 和 Haiku 每次运行的成本约为 Opus 的 0.45 倍和 0.025 倍，输出依然准确（引用逐字、数字可溯源），但篇幅约一半，保留的事实更少。电话会日志继续用 Opus；速读可以考虑 Haiku。
-- **输入。** 清理和双语拆分没有质量代价（分别少 3%–4% 和约 54% 的 token）。FORM 的完整输入是只给 transcript 的 2.2 倍成本，值得。
-- **重复次数。** 稳定性测试跑 2 次和 3 次结论相同。
+- **不知道从哪开始？** 见[从这里开始](#从这里开始)。
+- **Claude 应用**：导入 `dist/*.skill` 里打包好的文件。
+- **其他 agent**：`SKILL.md` 采用开放的 Agent Skills 格式，Codex CLI、Gemini CLI 等其他工具也能读取；把 skill 文件夹复制到对应工具的 skills 目录即可。脚本需要宿主能运行 Python。
+- **Claude Code / 文件式环境**：把 `skills/<分组>/<skill>/` 整个文件夹复制到你的 skills 目录。
+- `SKILL.md` 是 Claude 实际加载的英文版；`SKILL.zh-CN.md` 是同一个 skill 的中文版，供中文读者阅读。
+- 输出语言跟随提问语言；追加到已有文件时沿用该文件的语言。
+- 脚本需要 Python 3 和 `openpyxl`；装了 LibreOffice 时会用它重算公式。
+- `{RESEARCH_ROOT}` 指你的研究根目录，每个 ticker 一个子文件夹。
+
+```bash
+python tools/build.py       # 检查所有 skill、同步共享脚本、打包 dist/*.skill
+python tools/selftest.py    # 用合成数据跑一遍所有脚本
+```
 
 ## 工作流
 
@@ -308,6 +312,22 @@ python tools/selftest.py    # 用合成数据跑一遍所有脚本
 | 与手写参照对比 | investment-view（[evaluation/](evaluation/)：`compare_view.py`、`run_eval.py`、`diagnose.py`、`gate.py`） | 输出的判断和覆盖面逐渐偏离分析师本人的看法 |
 | 自测 | `tools/selftest.py` | 以上任何一项的回归（50 个用例，含预期失败的用例） |
 
+## 局限
+
+- 检查脚本验证的是结构，不是对错：能发现漏掉的板块或被改动的旧季度，但判断不了一个结论是否正确。
+- 输出质量取决于信息源。Yahoo Finance 通常只免费提供最近一次电话会的 transcript，更早的需要订阅或由用户提供文件。
+- 这些 skill 主要在光通信、半导体和 AI 基础设施公司上调试过。其他行业也能用，但内置的检查清单（例如光通信环节清单）没那么完整。
+- skill 文本是与 Claude 反复迭代写成的；脚本在 AI 辅助下编写，经过人工检查，并用 `tools/selftest.py` 测试。
+- 本仓库内容不构成投资建议。
+
+## 扩展到其他行业
+
+工作流、文件格式、校验脚本和"评估 → 调整"循环都与行业无关。与行业有关的是：
+
+- **产品拆分**：company-research 和 earnings-call-reader 会把"光通信"拆成 EML / CW / VCSEL / SiPh / 光模块；换一个行业需要它自己的拆分；
+- **环节清单和起步清单**：stock-discovery、value-chain-bom、architecture-delta-table 里的清单（液冷、固态电池、先进封装、存储已有起步清单）；
+- **参照案例**：两三家公司完整跑一遍，再加一份手写判断，循环才有可以对照调整的对象。
+
 ## 仓库结构
 
 ```
@@ -324,14 +344,6 @@ examples/                               输出示例（见下）
 dist/                                   打包好的 .skill 文件
 ```
 
-## 扩展到其他行业
-
-工作流、文件格式、校验脚本和"评估 → 调整"循环都与行业无关。与行业有关的是：
-
-- **产品拆分**：company-research 和 earnings-call-reader 会把"光通信"拆成 EML / CW / VCSEL / SiPh / 光模块；换一个行业需要它自己的拆分；
-- **环节清单和起步清单**：stock-discovery、value-chain-bom、architecture-delta-table 里的清单（液冷、固态电池、先进封装、存储已有起步清单）；
-- **参照案例**：两三家公司完整跑一遍，再加一份手写判断，循环才有可以对照调整的对象。
-
 ## 后续计划
 
 1. **量化稳定性**：当前版本的 skill 在同一份输入上、在不同会话里运行多次，测量脚本能自动计算的指标：校验通过率、引用忠实率（引用能在 transcript 中逐字找到的比例）、数字可溯源率、多次运行之间产品拆分和速读判断的一致性（[`evaluation/stability.py`](evaluation/README.md#稳定性指标stabilitypy)）。[TSEM 的第一批结果](evaluation/reports/2026-11-23_stability-tsem.md)：六次运行全部通过校验，三份速读的标签和标记完全相同；接下来是 COHR 和 FORM。以后可以用同一个脚本加上与本仓库之前旧版 skill 的前后对比。
@@ -340,11 +352,3 @@ dist/                                   打包好的 .skill 文件
 4. **扩展到更多行业**：把内置的检查清单和示例从光通信、半导体扩展出去，先从已有起步清单的液冷、固态电池、先进封装、存储做起。
 5. **基本面回测**：把研究信号预先写成固定规则（例如指引上调、订单代理项拐点、每份投资判断里记录的各维度判断），在时点数据上对照基准回测，并留出样本外区间，检验它们是否领先后续的基本面或股价表现。
 6. **运行器（单独的仓库）**：一个把本仓库当作 skill、评估和成本效益脚本库来调用的程序，补上聊天会话做不到的部分：批量和定时运行、多个模型并排对比、上面的基本面回测，以及 K 线图分析。本仓库保持为内容库，运行器只负责调度。
-
-## 局限
-
-- 检查脚本验证的是结构，不是对错：能发现漏掉的板块或被改动的旧季度，但判断不了一个结论是否正确。
-- 输出质量取决于信息源。Yahoo Finance 通常只免费提供最近一次电话会的 transcript，更早的需要订阅或由用户提供文件。
-- 这些 skill 主要在光通信、半导体和 AI 基础设施公司上调试过。其他行业也能用，但内置的检查清单（例如光通信环节清单）没那么完整。
-- skill 文本是与 Claude 反复迭代写成的；脚本在 AI 辅助下编写，经过人工检查，并用 `tools/selftest.py` 测试。
-- 本仓库内容不构成投资建议。
