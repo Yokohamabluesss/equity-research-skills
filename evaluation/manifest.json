@@ -88,6 +88,79 @@
      "split": "train"
     }
    ]
+  },
+  {
+   "id": "2026-11-25_skill-vs-human",
+   "date": "2026-11-25",
+   "status": "open",
+   "title": "Skill vs human on held-out companies: investment-view v1.7.0 on AEHR, CIEN and GLW (2026-11-25)",
+   "question": "On three companies the rules were never tuned on, how close is investment-view v1.7.0 to the analyst's hand-written views, and does the gap look like the in-sample gap?",
+   "question_zh": "在规则从未见过的三家公司上，investment-view v1.7.0 与分析师手写判断有多接近？差距是否和样本内一致？",
+   "runs": [
+    {
+     "id": "AEHR-v1.7",
+     "ticker": "AEHR",
+     "skill_version": "investment-view v1.7.0",
+     "generated": "runs/investment-view/v1.7/AEHR_投资判断.md",
+     "reference": "references/AEHR/AEHR_财报前瞻判断.md",
+     "inputs": {
+      "call_log": true,
+      "valuation_workbook": true,
+      "initial_coverage": true,
+      "financials": true,
+      "digest": false,
+      "transcripts": [
+       "FY26 Q4"
+      ],
+      "event_files": false
+     },
+     "notes": "Held-out: this company was never read while the rules were written. Point-in-time replay with 2026-09-25 as today, no web; price is the latest one in the workbook/brief. The analyst's own backup notes were withheld.",
+     "split": "heldout"
+    },
+    {
+     "id": "CIEN-v1.7",
+     "ticker": "CIEN",
+     "skill_version": "investment-view v1.7.0",
+     "generated": "runs/investment-view/v1.7/CIEN_投资判断.md",
+     "reference": "references/CIEN/CIEN_财报前瞻判断.md",
+     "inputs": {
+      "call_log": true,
+      "valuation_workbook": true,
+      "initial_coverage": true,
+      "financials": true,
+      "digest": true,
+      "transcripts": [
+       "FY26 Q1",
+       "FY26 Q2",
+       "FY26 Q3"
+      ],
+      "event_files": false
+     },
+     "notes": "Held-out: this company was never read while the rules were written. Point-in-time replay with 2026-10-01 as today, no web; price is the latest one in the workbook/brief. The analyst's own backup notes were withheld.",
+     "split": "heldout"
+    },
+    {
+     "id": "GLW-v1.7",
+     "ticker": "GLW",
+     "skill_version": "investment-view v1.7.0",
+     "generated": "runs/investment-view/v1.7/GLW_投资判断.md",
+     "reference": "references/GLW/GLW_财报前瞻判断.md",
+     "inputs": {
+      "call_log": true,
+      "valuation_workbook": true,
+      "initial_coverage": true,
+      "financials": true,
+      "digest": true,
+      "valuation_brief": true,
+      "transcripts": [
+       "FY26 Q2"
+      ],
+      "event_files": false
+     },
+     "notes": "Held-out: this company was never read while the rules were written. Point-in-time replay with 2026-10-13 as today, no web; price is the latest one in the workbook/brief. The analyst's own backup notes were withheld.",
+     "split": "heldout"
+    }
+   ]
   }
  ]
 }

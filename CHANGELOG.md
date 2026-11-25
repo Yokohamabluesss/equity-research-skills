@@ -6,6 +6,13 @@
 
 Versions apply to the whole skill set. Every change that can alter outputs is recorded here, so that examples and evaluation results can always be traced to the version that produced them.
 
+## v1.7.1 — 2026-11-25
+
+**Evaluation** (no skill changed)
+- Held-out experiment [2026-11-25_skill-vs-human](evaluation/reports/2026-11-25_skill-vs-human.md): investment-view v1.7.0 on AEHR, CIEN and GLW, point-in-time replays. 12 of 14 marks agree; both disagreements on Customers; Core longer than its 8–15-line rule. Registered in `manifest.json` as `split: heldout`.
+- Stability on five companies: [2026-11-25_stability-5co](evaluation/reports/2026-11-25_stability-5co.md). 20 runs, all valid; digest tags always identical, 20 of 25 marks identical.
+- `stability.py`: quoted spans that contain Chinese characters are no longer counted as English quotes (TSEM call-log quote fidelity 99% → 100%).
+
 ## v1.7.0 — 2026-11-23
 
 - **New meta skill `research-workflow`**: the entry point. Checks the company folder with `scripts/status.py`, offers fixed workflows (first coverage / new quarter / event / find companies / review) and optional add-ons (comparison with the analyst's note, stability check, cost-quality record, rule proposals), then runs the skills in order with their validators. No analysis rules of its own.
@@ -107,6 +114,13 @@ Versions apply to the whole skill set. Every change that can alter outputs is re
 # 版本记录
 
 版本号针对整套 skills。所有可能改变输出的修改都记在这里，这样示例和评估结果总能对应到生成它们的版本。
+
+## v1.7.1 — 2026-11-25
+
+**评估**（skill 本身未改）
+- 留出实验 [2026-11-25_skill-vs-human](evaluation/reports/2026-11-25_skill-vs-human.md)：investment-view v1.7.0 在 AEHR、CIEN、GLW 上按时点回放。14 个标记中 12 个一致；两处分歧都在客户维；核心超出 8–15 行的规则。在 `manifest.json` 中登记为 `split: heldout`。
+- 五家公司的稳定性：[2026-11-25_stability-5co](evaluation/reports/2026-11-25_stability-5co.md)。20 次运行全部有效；速读标签始终相同，25 个标记中 20 个相同。
+- `stability.py`：含中文字符的引号片段不再算作英文引用（TSEM 电话会日志的引用逐字率 99% → 100%）。
 
 ## v1.7.0 — 2026-11-23
 

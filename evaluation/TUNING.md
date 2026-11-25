@@ -111,7 +111,7 @@ Proposals are written to `workspace/runs/{skill}/proposals/`. The skill version 
 - **Judgment**: Orders differs in two companies (TSEM, FORM). This is a question for the analyst, not a rule candidate.
 - **Rule candidates**: Core term coverage (COHR, FORM) and quarter product-table rows (COHR, FORM). The table-row pattern is mostly by design: rows outside the thesis are dropped, and one FORM run had no call log. So the evidence has to be read before anything is proposed.
 - **Input gap**: the transcripts-only FORM run had no estimates block.
-- No held-out run exists yet, so any change made now would be PROVISIONAL.
+- At the time of this diagnosis, changes could only be PROVISIONAL. The [November 25 experiment](reports/2026-11-25_skill-vs-human.md) supplies held-out baseline runs for AEHR, CIEN and GLW. A decision on a future change requires paired candidate runs on the same inputs.
 
 ## Without a hand-written reference
 
@@ -261,7 +261,7 @@ python evaluation/gate.py --baseline .../基线ID/summary.json --candidate .../�
 - **判断**：订单维在两家公司（TSEM、FORM）有分歧。这是要问分析师的问题，不是规则候选。
 - **规则候选**：核心术语覆盖（COHR、FORM）和季度产品表的行（COHR、FORM）。表格行这个模式大部分是规则有意造成的：主线以外的行会被删掉，而且有一次 FORM 运行没有电话会日志。所以提案之前必须先读证据。
 - **缺输入**：只用 transcript 的那次 FORM 运行没有测算块。
-- 目前还没有留出运行，所以现在做的任何改动都只能是暂定。
+- 本次诊断时还没有留出运行，改动只能标为暂定。[11 月 25 日的实验](reports/2026-11-25_skill-vs-human.md#中文)补上了 AEHR、CIEN、GLW 的留出基线。今后判断规则改动是否可采纳，还需用相同输入运行候选版本配对比较。
 
 ## 没有手写版时
 

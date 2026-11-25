@@ -23,7 +23,9 @@ Sample outputs produced by the skills. Each output exists in English (`en/`) and
 - Consensus and peer data come from a single source.
 - Nothing here is a buy or sell view, a price target, or a cheap-or-expensive judgment. The FCFF per-share values are model outputs, not targets.
 
-Comparisons of skill output with hand-written views live in [`../evaluation/`](../evaluation/), not here.
+## Evaluation cases · AEHR, CIEN and GLW
+
+Each company was held out while the rules were written. The [investment-view report](../evaluation/reports/2026-11-25_skill-vs-human.md) compares the skill’s marks with the analyst’s. The [five-company stability report](../evaluation/reports/2026-11-25_stability-5co.md) compares repeated runs of the call reader and digest, with a row for each company. Source materials, hand-written references and individual run files stay in the private workspace.
 
 ---
 
@@ -52,4 +54,6 @@ Comparisons of skill output with hand-written views live in [`../evaluation/`](.
 - 一致预期和可比公司数据只来自一个来源。
 - 这里没有买卖观点、目标价，也没有贵或便宜的判断；FCFF 每股价值是模型输出，不是目标价。
 
-skill 产出与手写判断的对比放在 [`../evaluation/`](../evaluation/)，不在这里。
+## 评估案例 · AEHR、CIEN、GLW
+
+写规则时留出了这三家公司。[投资判断对照报告](../evaluation/reports/2026-11-25_skill-vs-human.md#中文)逐家公司比较 skill 与分析师的判断标记。[五家公司稳定性报告](../evaluation/reports/2026-11-25_stability-5co.md#中文)列出了电话会解读和速读在相同输入上重复运行的结果。原始资料、手写参照和逐次运行文件保存在私有工作区。

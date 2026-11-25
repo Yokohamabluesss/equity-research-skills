@@ -70,6 +70,7 @@ def latest_quarter(text: str, fmt: str) -> str:
 
 
 QUOTE = re.compile(r"[\"“]([A-Za-z][^\"”\n]{15,}?)[\"”]")
+CJK = re.compile(r"[\u3400-\u9fff]")
 
 
 def norm(t: str) -> str:
@@ -80,7 +81,9 @@ def source_scores(text: str, src: str | None) -> dict:
     if not src:
         return {}
     ns = norm(src)
-    quotes = [q for q in QUOTE.findall(text) if len(q.split()) >= 4]
+    # English quotes only: a quoted span with CJK characters is the skill's own
+    # Chinese wording that happens to start with a Latin token (e.g. "FY27 订满 ...")
+    quotes = [q for q in QUOTE.findall(text) if len(q.split()) >= 4 and not CJK.search(q)]
     # an elided quote ("A ... B") counts as verbatim when every part is
     found = [q for q in quotes if all(norm(part) in ns for part in re.split(r"\.\.\.|…", q) if part.strip())]
     src_nums = set(numbers(src))

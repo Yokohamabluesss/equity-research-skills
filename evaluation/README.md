@@ -33,7 +33,7 @@ A skill can be stable and still wrong, or right on average and unstable; the two
 ## What is measured: three layers
 
 1. **Effect: did a rule change help?** Run two skill versions on the same inputs and compare both with the same reference (TSEM v1 → v2 in the first report).
-2. **Generalisation: does it hold on companies the rules were not tuned on?** COHR and FORM so far. Both are not blind yet, because their references had been read. A clean held-out run (a new quarter or company, a fresh session) is the next step.
+2. **Generalisation: does it hold on companies the rules were not tuned on?** The first study included COHR and FORM, whose references had already been read. In the [held-out company study](reports/2026-11-25_skill-vs-human.md), the rules were fixed before testing AEHR, CIEN and GLW. Across one fresh session per company, 12 of 14 comparable marks matched the analyst’s.
 3. **Stability: same input, same output?** The current skill run several times on one input, in separate sessions. The same script can later compare against the skills as they were before this repository. Metrics and protocol: [below](#stability-metrics-stabilitypy).
 
 A fourth question, whether the judgments turn out to be right, needs time: every quarter block and estimate is dated, so the "next-quarter upside drivers" can later be scored against the next report. That is the fundamental backtest in the roadmap.
@@ -69,7 +69,7 @@ A group is N outputs of one skill version from the same input, each from a separ
 | quotes verbatim | with `--source`: share of quoted English passages found word for word in the source | quote fidelity |
 | numbers traceable | with `--source`: share of the output's numbers that appear in the source | no invented numbers |
 
-Protocol: the current skill runs three times on the same input, each run in a fresh session: earnings-call-reader on one transcript (`--format log --source TRANSCRIPT`) and earnings-digest on one call log (`--format digest --source LOG`), e.g. `python evaluation/stability.py --format digest OLD_DIR NEW_DIR --source LOG`. The judgment is expected to vary a little even when the format does not. A before/after comparison adds a second group, the old skill from the private workspace, run the same way.
+Protocol: the current skill runs two or three times on the same input (two give the same verdict as three, see the cost report), each run in a fresh session: earnings-call-reader on one transcript (`--format log --source TRANSCRIPT`) and earnings-digest on one call log (`--format digest --source LOG`), e.g. `python evaluation/stability.py --format digest OLD_DIR NEW_DIR --source LOG`. The judgment is expected to vary a little even when the format does not. A before/after comparison adds a second group, the old skill from the private workspace, run the same way.
 
 ## How to run
 
@@ -99,6 +99,8 @@ The references are the analyst's private notes and the raw transcripts are copyr
 
 - [2026-11-22: skill vs human, TSEM / COHR / FORM](reports/2026-11-22_skill-vs-human.md)
 - [2026-11-23: stability, TSEM FY26 Q2](reports/2026-11-23_stability-tsem.md)
+- [2026-11-25: skill vs human on held-out companies, AEHR / CIEN / GLW](reports/2026-11-25_skill-vs-human.md)
+- [2026-11-25: stability, five companies](reports/2026-11-25_stability-5co.md)
 
 ---
 
@@ -135,7 +137,7 @@ The references are the analyst's private notes and the raw transcripts are copyr
 ## 测什么：三层
 
 1. **有效性：规则改动有没有用？** 同一份输入跑两个版本的 skill，和同一份手写版对比（第一份报告里的 TSEM v1 → v2）。
-2. **泛化：换一家规则没调过的公司还成立吗？** 目前是 COHR 和 FORM。两者都还不是盲测，因为它们的手写版已经被读过。干净的留出测试（新季度或新公司，新会话）是下一步。
+2. **泛化：换一家规则没调过的公司还成立吗？** 首轮实验已读过 COHR 和 FORM 的手写参照。[留出公司实验](reports/2026-11-25_skill-vs-human.md#中文)先固定规则，再对 AEHR、CIEN、GLW 各开一个新会话测试。14 个可比较的标记中，12 个与分析师一致。
 3. **稳定性：同样输入，同样输出？** 当前版本的 skill 在同一输入上、在不同会话里运行多次。以后可以用同一个脚本，与本仓库之前的旧版 skill 做前后对比。指标和做法见[下文](#稳定性指标stabilitypy)。
 
 第四个问题是"判断事后是否正确"，需要时间：每个季度块和测算都带日期，"下一季超预期点"可以在下一次财报后打分，这就是后续计划里的基本面回测。
@@ -171,7 +173,7 @@ The references are the analyst's private notes and the raw transcripts are copyr
 | quotes verbatim | 加 `--source` 时：引用的英文原文能在原始材料中逐字找到的比例 | 引用忠实率 |
 | numbers traceable | 加 `--source` 时：输出中的数字能在原始材料中找到的比例 | 有没有编造数字 |
 
-做法：当前版本在同一份输入上跑三次，每次都在新会话里：earnings-call-reader 读一份 transcript（`--format log --source transcript`），earnings-digest 读一份电话会日志（`--format digest --source 日志`），例如 `python evaluation/stability.py --format digest 旧版目录 新版目录 --source 日志`。格式稳定时判断仍可能有少量波动。做前后对比时，再加一组：私人工作区里的旧版 skill，按同样方式运行。
+做法：当前版本在同一份输入上跑两到三次（跑 2 次和 3 次结论相同，见成本报告），每次都在新会话里：earnings-call-reader 读一份 transcript（`--format log --source transcript`），earnings-digest 读一份电话会日志（`--format digest --source 日志`），例如 `python evaluation/stability.py --format digest 旧版目录 新版目录 --source 日志`。格式稳定时判断仍可能有少量波动。做前后对比时，再加一组：私人工作区里的旧版 skill，按同样方式运行。
 
 ## 怎么运行
 
@@ -201,3 +203,5 @@ python evaluation/run_eval.py --experiment 2026-11-22_skill-vs-human --root 工�
 
 - [2026-11-22：skill vs 人，TSEM / COHR / FORM](reports/2026-11-22_skill-vs-human.md)
 - [2026-11-23：稳定性，TSEM FY26 Q2](reports/2026-11-23_stability-tsem.md)
+- [2026-11-25：留出公司上的 skill vs 人，AEHR / CIEN / GLW](reports/2026-11-25_skill-vs-human.md)
+- [2026-11-25：稳定性，五家公司](reports/2026-11-25_stability-5co.md)

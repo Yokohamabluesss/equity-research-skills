@@ -8,7 +8,7 @@ A set of 12 Claude skills that cover one equity-research workflow end to end: fi
 
 Some of the skills **summarise** (turning a 60-page call transcript into a structured log). Others **analyse** (a bottom-up valuation model, a value-chain BOM, an architecture-migration delta table). In both cases the hard part is not getting one good answer. It is getting the **same structure, the same labels and the same standards of evidence every time**, so that outputs can be compared across quarters and across companies. Most of the engineering in this repo exists to make that happen.
 
-[See the TSEM examples](examples/README.md) · [Read the evaluation report](evaluation/reports/2026-11-22_skill-vs-human.md) · [Start here](#start-here)
+[Browse examples and evaluation cases](examples/README.md) · [Read the held-out evaluation](evaluation/reports/2026-11-25_skill-vs-human.md) · [Start here](#start-here)
 
 ## Evaluate → tune: skills that improve against the analyst
 
@@ -25,9 +25,9 @@ First results ([report](evaluation/reports/2026-11-22_skill-vs-human.md), TSEM /
 - **Judgment**: 17 of 20 dimension marks agree. All three disagreements are on Orders: the skill flags missing or stale order data, while the analyst trusts strong demand language.
 - **Facts**: the skill covers 80–93% of the analyst's numbers in the quarter text. One manual pass through the loop (v1 → v2) raised table and estimate coverage from about 60% to above 90%.
 - **Different blind spots**: the analyst adds value-chain structure and domain knowledge from outside the sources; the skill adds anchor numbers and caveats the analyst skipped.
-- **Limits**: not yet blind, one run per company. A held-out quarter is next.
+- **Held-out companies** ([report](evaluation/reports/2026-11-25_skill-vs-human.md), AEHR / CIEN / GLW, never used to write the rules): 12 of 14 marks agree and 82–89% of the analyst's lines are covered or partly covered, about the same as in-sample. Both disagreements are on Customers, where the skill is more cautious; the skill's Core runs long.
 
-This compares the skill with the analyst (accuracy). A separate [stability report](evaluation/reports/2026-11-23_stability-tsem.md) runs the same skill several times on the same input and compares the runs with each other (consistency): on TSEM, three digests gave identical tags and marks.
+This compares the skill with the analyst (accuracy). Separate stability reports run the same skill several times on the same input and compare the runs with each other (consistency): on [TSEM](evaluation/reports/2026-11-23_stability-tsem.md), three digests gave identical tags and marks; on [five more companies](evaluation/reports/2026-11-25_stability-5co.md), all 20 runs are valid, tags always match, and 20 of 25 marks are identical, with flips only between ✅️ and ⚠️.
 
 **Tuning.** Scripts sort the differences (input gap, format, judgment, coverage, length); the `skill-tuner` skill proposes rule edits only for patterns seen in two or more companies; the analyst approves; a gate keeps a change only if held-out companies do not get worse. Judgment rules are never changed automatically, word overlap is never a target, and the output framework of each skill stays fixed. Details: **[evaluation/TUNING.md](evaluation/TUNING.md)**.
 
@@ -163,14 +163,14 @@ docs/SKILLS_GUIDE.md                     what each skill does and why
 evaluation/                              skill output vs hand-written judgment: scripts, manifest, reports, TUNING.md
 cost-benefit/                            cost per run vs quality: cost.py, runs.json, reports
 CHANGELOG.md                             version record
-examples/                                sample outputs (see below)
+examples/                                sample outputs and evaluation cases
 dist/                                    packaged .skill files
 ```
 
 ## Roadmap
 
-1. **Measured stability.** Run the current skills several times on the same input, in separate sessions, and measure what scripts can compute: validator pass rate, quote fidelity (the share of quotes found verbatim in the transcript), number traceability, and run-to-run consistency of product splits and digest verdicts ([`evaluation/stability.py`](evaluation/README.md#stability-metrics-stabilitypy)). [First results on TSEM](evaluation/reports/2026-11-23_stability-tsem.md): six runs, all valid; the three digests gave identical tags and marks. COHR and FORM are next. A before/after comparison with the skills as they were before this repository can be added with the same script.
-2. **investment-view calibration.** investment-view will continue to be adjusted and upgraded as more hand-written references are compared ([evaluation/](evaluation/)). Next: a held-out (blind) quarter, a decision on the Orders rule, and a judgment-level review of missed lines. Each change is recorded in [CHANGELOG.md](CHANGELOG.md).
+1. **Measured stability.** Run the current skills several times on the same input, in separate sessions, and measure what scripts can compute: validator pass rate, quote fidelity (the share of quotes found verbatim in the transcript), number traceability, and run-to-run consistency of product splits and digest verdicts ([`evaluation/stability.py`](evaluation/README.md#stability-metrics-stabilitypy)). [First results on TSEM](evaluation/reports/2026-11-23_stability-tsem.md): six runs, all valid; the three digests gave identical tags and marks. [Five more companies](evaluation/reports/2026-11-25_stability-5co.md), including three held-out ones: 20 runs, all valid; 20 of 25 digest marks identical, Customers the least stable. A before/after comparison with the skills as they were before this repository can be added with the same script.
+2. **investment-view calibration.** investment-view will continue to be adjusted and upgraded as more hand-written references are compared ([evaluation/](evaluation/)). The held-out quarter, Orders rule decision and judgment-level review of missed lines remain on the roadmap. The [held-out company study](evaluation/reports/2026-11-25_skill-vs-human.md) also identifies two decisions for the analyst: how to mark mixed customer evidence and how to enforce the Core length limit. Each change is recorded in [CHANGELOG.md](CHANGELOG.md).
 3. **New skills** to fill gaps found in daily use.
 4. **More industries.** Extend the built-in checklists and examples beyond optical communications and semiconductors, starting from the lists that already exist for liquid cooling, solid-state batteries, advanced packaging and storage.
 5. **Fundamental backtesting.** Turn research signals into rules fixed in advance (for example guidance raises, order-proxy inflections, or the dimension verdicts recorded in each investment view), then test on point-in-time historical data against a benchmark, with an out-of-sample period, to see whether they lead subsequent fundamentals or returns.
@@ -186,7 +186,7 @@ dist/                                    packaged .skill files
 
 其中有**总结型**（把 60 页的电话会 transcript 变成结构化日志），也有**分析型**（自下而上的估值模型、产业链价值量拆分、架构迁移增减量对照表）。两类的难点都不在于某一次答得好，而在于**每一次都保持同样的结构、同样的标签、同样的证据标准**，这样不同季度、不同公司的输出才能放在一起比较。这个仓库里的大部分工程工作都是为了做到这一点。
 
-[查看 TSEM 成品](examples/README.md#示例) · [阅读评估报告](evaluation/reports/2026-11-22_skill-vs-human.md#中文) · [从这里开始](#从这里开始)
+[查看示例与评估案例](examples/README.md#示例) · [阅读留出公司评估报告](evaluation/reports/2026-11-25_skill-vs-human.md#中文) · [从这里开始](#从这里开始)
 
 ## 评估 → 调整：对照分析师不断改进的 skill
 
@@ -203,9 +203,9 @@ skill 产出 vs 手写版 ──► 给差异分类 ──► 提出规则修改
 - **判断**：20 个维度标记中 17 个一致。3 处分歧都在订单维：skill 对缺失或未更新的订单数据给出警示，分析师更相信强烈的需求表述。
 - **事实**：季度正文中分析师写的数字，skill 覆盖 80–93%；手动走过一轮循环（v1 → v2）后，表格和测算的覆盖率从约 60% 升到 90% 以上。
 - **盲区不同**：分析师补上材料之外的产业链结构和领域知识；skill 补上分析师略过的锚点数字和风险提示。
-- **局限**：还不是盲测，每家公司只跑了一次；下一步是留出季度测试。
+- **留出公司**（[报告](evaluation/reports/2026-11-25_skill-vs-human.md)，AEHR / CIEN / GLW，写规则时从未用过）：14 个标记中 12 个一致，分析师的行有 82–89% 被覆盖或部分覆盖，与样本内相当。两处分歧都在客户维，skill 更谨慎；skill 的核心偏长。
 
-以上是 skill 和分析师比（准确度）。另一份[稳定性报告](evaluation/reports/2026-11-23_stability-tsem.md)让同一个 skill 在同一份输入上跑多次，几次运行之间互相比（一致性）：在 TSEM 上，三份速读的标签和标记完全相同。
+以上是 skill 和分析师比（准确度）。另有稳定性报告让同一个 skill 在同一份输入上跑多次，几次运行之间互相比（一致性）：在 [TSEM](evaluation/reports/2026-11-23_stability-tsem.md) 上，三份速读的标签和标记完全相同；在[另外五家公司](evaluation/reports/2026-11-25_stability-5co.md)上，20 次运行全部有效，标签始终一致，25 个标记中 20 个相同，翻转只在 ✅️ 和 ⚠️ 之间。
 
 **调整。** 脚本先给差异分类（缺输入、格式、判断、覆盖、长度）；`skill-tuner` skill 只对两家以上公司都出现的模式提出规则修改；分析师批准；把关脚本确认留出公司没有变差才保留改动。判断规则永远不自动修改，字面重叠永远不作为目标，各 skill 的输出框架保持不变。详见 **[evaluation/TUNING.md](evaluation/TUNING.md)**。
 
@@ -340,14 +340,14 @@ docs/SKILLS_GUIDE.md                    每个 skill 做什么、为什么这样
 evaluation/                             skill 产出 vs 手写判断：脚本、清单、报告、TUNING.md
 cost-benefit/                           每次运行的成本 vs 质量：cost.py、runs.json、报告
 CHANGELOG.md                            版本记录
-examples/                               输出示例（见下）
+examples/                               输出示例与评估案例
 dist/                                   打包好的 .skill 文件
 ```
 
 ## 后续计划
 
-1. **量化稳定性**：当前版本的 skill 在同一份输入上、在不同会话里运行多次，测量脚本能自动计算的指标：校验通过率、引用忠实率（引用能在 transcript 中逐字找到的比例）、数字可溯源率、多次运行之间产品拆分和速读判断的一致性（[`evaluation/stability.py`](evaluation/README.md#稳定性指标stabilitypy)）。[TSEM 的第一批结果](evaluation/reports/2026-11-23_stability-tsem.md)：六次运行全部通过校验，三份速读的标签和标记完全相同；接下来是 COHR 和 FORM。以后可以用同一个脚本加上与本仓库之前旧版 skill 的前后对比。
-2. **investment-view 校准**：未来这部分会继续做调整和升级，随着对比更多手写参照不断改进（[evaluation/](evaluation/)）。下一步：留出季度的盲测、确定订单维规则、对遗漏行做判断层面的复核。每次改动记录在 [CHANGELOG.md](CHANGELOG.md)。
+1. **量化稳定性**：当前版本的 skill 在同一份输入上、在不同会话里运行多次，测量脚本能自动计算的指标：校验通过率、引用忠实率（引用能在 transcript 中逐字找到的比例）、数字可溯源率、多次运行之间产品拆分和速读判断的一致性（[`evaluation/stability.py`](evaluation/README.md#稳定性指标stabilitypy)）。[TSEM 的第一批结果](evaluation/reports/2026-11-23_stability-tsem.md)：六次运行全部通过校验，三份速读的标签和标记完全相同。[另外五家公司](evaluation/reports/2026-11-25_stability-5co.md)（含三家留出公司）：20 次运行全部通过校验；速读标记 25 个中 20 个相同，客户维最不稳定。以后可以用同一个脚本加上与本仓库之前旧版 skill 的前后对比。
+2. **investment-view 校准**：未来这部分会继续做调整和升级，随着对比更多手写参照不断改进（[evaluation/](evaluation/)）。后续仍计划做留出季度盲测、确定订单维规则，并复核遗漏行的判断。[留出公司实验](evaluation/reports/2026-11-25_skill-vs-human.md#中文)还提出两项待分析师决定的问题：客户证据方向不一时如何打标，以及如何检查核心段的长度。每次改动记录在 [CHANGELOG.md](CHANGELOG.md)。
 3. **新增 skills**：补上日常使用中发现的空缺。
 4. **扩展到更多行业**：把内置的检查清单和示例从光通信、半导体扩展出去，先从已有起步清单的液冷、固态电池、先进封装、存储做起。
 5. **基本面回测**：把研究信号预先写成固定规则（例如指引上调、订单代理项拐点、每份投资判断里记录的各维度判断），在时点数据上对照基准回测，并留出样本外区间，检验它们是否领先后续的基本面或股价表现。
